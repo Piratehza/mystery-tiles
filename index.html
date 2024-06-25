@@ -12,11 +12,29 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            margin: 0;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            margin: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .info {
+            margin-bottom: 20px;
+            font-size: 18px;
         }
         .grid {
             display: grid;
             grid-gap: 2px;
-            margin-bottom: 20px;
         }
         .tile {
             width: 100px;
@@ -28,12 +46,7 @@
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
-        }
-        .controls {
-            margin-bottom: 20px;
-        }
-        .controls button {
-            margin-right: 10px;
+            background-size: cover;
         }
     </style>
 </head>
@@ -78,7 +91,7 @@
                         document.getElementById('moves').textContent = moves;
                         if (checkWin()) {
                             clearInterval(interval);
-                            alert('Congratulations! You solved the puzzle.');
+                            alert(`Congratulations! You solved the puzzle in ${timer} seconds and ${moves} moves.`);
                         }
                     }
                 });
@@ -102,6 +115,9 @@
             const tempHTML = tile1.innerHTML;
             tile1.innerHTML = tile2.innerHTML;
             tile2.innerHTML = tempHTML;
+            const tempStyle = tile1.style.backgroundImage;
+            tile1.style.backgroundImage = tile2.style.backgroundImage;
+            tile2.style.backgroundImage = tempStyle;
         }
 
         function shuffleArray(array) {
