@@ -6,10 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mystery Tiles</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
         .grid {
             display: grid;
-            grid-template-columns: repeat(3, 100px);
             grid-gap: 2px;
+            margin-bottom: 20px;
         }
         .tile {
             width: 100px;
@@ -22,45 +29,110 @@
             font-weight: bold;
             cursor: pointer;
         }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls button {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="grid" id="grid">
-        <div class="tile" data-index="0">1</div>
-        <div class="tile" data-index="1">2</div>
-        <div class="tile" data-index="2">3</div>
-        <div class="tile" data-index="3">4</div>
-        <div class="tile" data-index="4">5</div>
-        <div class="tile" data-index="5">6</div>
-        <div class="tile" data-index="6">7</div>
-        <div class="tile" data-index="7">8</div>
-        <div class="tile" data-index="8"></div>
+    <h1>Mystery Tiles</h1>
+    <div class="controls">
+        <button onclick="startGame(3)">Easy</button>
+        <button onclick="startGame(4)">Medium</button>
+        <button onclick="startGame(5)">Hard</button>
     </div>
+    <div class="info">
+        <div>Time: <span id="timer">0</span> seconds</div>
+        <div>Moves: <span id="moves">0</span></div>
+    </div>
+    <div class="grid" id="grid"></div>
 
     <script>
-        const grid = document.getElementById('grid');
-        const tiles = Array.from(document.getElementsByClassName('tile'));
+        let grid, tiles, timer, moves, interval, size;
 
-        tiles.forEach(tile => {
-            tile.addEventListener('click', () => {
-                const emptyTile = tiles.find(t => t.textContent === '');
-                if (isAdjacent(tile, emptyTile)) {
-                    swapTiles(tile, emptyTile);
-                }
+        function startGame(difficulty) {
+            size = difficulty;
+            grid = document.getElementById('grid');
+            grid.style.gridTemplateColumns = `repeat(${size}, 100px)`;
+            grid.innerHTML = '';
+            tiles = [];
+            for (let i = 0; i < size * size - 1; i++) {
+                tiles.push(`<div class="tile" data-index="${i}" style="background-image: url('images/${i + 1}.jpg');"></div>`);
+            }
+            tiles.push('<div class="tile" data-index="${size * size - 1}"></div>'); // Empty tile
+            tiles = shuffleArray(tiles);
+            grid.innerHTML = tiles.join('');
+            moves = 0;
+            document.getElementById('moves').textContent = moves;
+            resetTimer();
+            startTimer();
+            document.querySelectorAll('.tile').forEach(tile => {
+                tile.addEventListener('click', () => {
+                    const emptyTile = document.querySelector('.tile:empty');
+                    if (isAdjacent(tile, emptyTile)) {
+                        swapTiles(tile, emptyTile);
+                        moves++;
+                        document.getElementById('moves').textContent = moves;
+                        if (checkWin()) {
+                            clearInterval(interval);
+                            alert('Congratulations! You solved the puzzle.');
+                        }
+                    }
+                });
             });
-        });
+        }
 
         function isAdjacent(tile1, tile2) {
             const index1 = parseInt(tile1.dataset.index);
             const index2 = parseInt(tile2.dataset.index);
-            const size = Math.sqrt(tiles.length);
-            return Math.abs(index1 - index2) === 1 || Math.abs(index1 - index2) === size;
+            const row1 = Math.floor(index1 / size);
+            const col1 = index1 % size;
+            const row2 = Math.floor(index2 / size);
+            const col2 = index2 % size;
+            return (Math.abs(row1 - row2) + Math.abs(col1 - col2)) === 1;
         }
 
         function swapTiles(tile1, tile2) {
-            const temp = tile1.textContent;
-            tile1.textContent = tile2.textContent;
-            tile2.textContent = temp;
+            const tempIndex = tile1.dataset.index;
+            tile1.dataset.index = tile2.dataset.index;
+            tile2.dataset.index = tempIndex;
+            const tempHTML = tile1.innerHTML;
+            tile1.innerHTML = tile2.innerHTML;
+            tile2.innerHTML = tempHTML;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startTimer() {
+            let startTime = Date.now();
+            interval = setInterval(() => {
+                timer = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').textContent = timer;
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(interval);
+            document.getElementById('timer').textContent = '0';
+        }
+
+        function checkWin() {
+            const tiles = document.querySelectorAll('.tile');
+            for (let i = 0; i < tiles.length; i++) {
+                if (tiles[i].dataset.index != i) {
+                    return false;
+                }
+            }
+            return true;
         }
     </script>
 </body>
