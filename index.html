@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystery Tiles</title>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 2px;
+        }
+        .tile {
+            width: 100px;
+            height: 100px;
+            background-color: lightblue;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid" id="grid">
+        <div class="tile" data-index="0">1</div>
+        <div class="tile" data-index="1">2</div>
+        <div class="tile" data-index="2">3</div>
+        <div class="tile" data-index="3">4</div>
+        <div class="tile" data-index="4">5</div>
+        <div class="tile" data-index="5">6</div>
+        <div class="tile" data-index="6">7</div>
+        <div class="tile" data-index="7">8</div>
+        <div class="tile" data-index="8"></div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const tiles = Array.from(document.getElementsByClassName('tile'));
+
+        tiles.forEach(tile => {
+            tile.addEventListener('click', () => {
+                const emptyTile = tiles.find(t => t.textContent === '');
+                if (isAdjacent(tile, emptyTile)) {
+                    swapTiles(tile, emptyTile);
+                }
+            });
+        });
+
+        function isAdjacent(tile1, tile2) {
+            const index1 = parseInt(tile1.dataset.index);
+            const index2 = parseInt(tile2.dataset.index);
+            const size = Math.sqrt(tiles.length);
+            return Math.abs(index1 - index2) === 1 || Math.abs(index1 - index2) === size;
+        }
+
+        function swapTiles(tile1, tile2) {
+            const temp = tile1.textContent;
+            tile1.textContent = tile2.textContent;
+            tile2.textContent = temp;
+        }
+    </script>
+</body>
+</html>
