@@ -51,11 +51,16 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let player = { x: 400, y: 500, width: 40, height: 40, color: '#00f', speed: 5 };
+        const level = parseInt(localStorage.getItem('level') || '1');
+        const playerColor = localStorage.getItem('style') || '#00f';
+
+        let player = { x: 400, y: 500, width: 40, height: 40, color: playerColor, speed: 5 };
         let bullets = [];
         let enemies = [];
         let score = 0;
+        let lives = 3;
         let isLeft = false, isRight = false;
+        let gameOver = false;
 
         function drawPlayer() {
             ctx.fillStyle = player.color;
@@ -80,13 +85,18 @@
                 ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
                 if (enemy.y > canvas.height) {
                     enemies.splice(index, 1);
+                    lives--;
+                    if (lives <= 0) {
+                        gameOver = true;
+                    }
                 }
             });
         }
 
         function spawnEnemy() {
             let x = Math.random() * (canvas.width - 40);
-            enemies.push({ x: x, y: -40, width: 40, height: 40, speed: 2 });
+            let speed = 2 + level;
+            enemies.push({ x: x, y: -40, width: 40, height: 40, speed: speed });
         }
 
         function detectCollisions() {
@@ -104,6 +114,21 @@
                     }
                 });
             });
+
+            enemies.forEach((enemy, enemyIndex) => {
+                if (
+                    player.x < enemy.x + enemy.width &&
+                    player.x + player.width > enemy.x &&
+                    player.y < enemy.y + enemy.height &&
+                    player.y + player.height > enemy.y
+                ) {
+                    enemies.splice(enemyIndex, 1);
+                    lives--;
+                    if (lives <= 0) {
+                        gameOver = true;
+                    }
+                }
+            });
         }
 
         function update() {
@@ -115,11 +140,20 @@
             ctx.fillStyle = '#fff';
             ctx.font = '20px Arial';
             ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.fillText(`Lives: ${lives}`, 10, 60);
 
             if (isLeft && player.x > 0) player.x -= player.speed;
             if (isRight && player.x < canvas.width - player.width) player.x += player.speed;
 
-            requestAnimationFrame(update);
+            if (!gameOver) {
+                requestAnimationFrame(update);
+            } else {
+                ctx.fillStyle = '#fff';
+                ctx.font = '40px Arial';
+                ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+                ctx.font = '20px Arial';
+                ctx.fillText('Reload to try again', canvas.width / 2 - 70, canvas.height / 2 + 40);
+            }
         }
 
         function shoot() {
