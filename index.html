@@ -1,137 +1,117 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird Clone</title>
+    <title>2D FPS Game</title>
     <style>
         body {
+            margin: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            background-color: #70c5ce;
-            overflow: hidden;
+            background-color: #333;
         }
         canvas {
-            background-color: #70c5ce;
-            display: block;
+            background-color: #fff;
             border: 2px solid #000;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="320" height="480"></canvas>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let bird = { x: 50, y: 150, width: 20, height: 20, gravity: 0.6, lift: -15, velocity: 0 };
-        let pipes = [];
-        let frameCount = 0;
+        let player = { x: 400, y: 300, width: 40, height: 40, color: '#00f', speed: 5 };
+        let bullets = [];
+        let enemies = [];
         let score = 0;
-        let gameOver = false;
 
-        function setup() {
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space' && !gameOver) {
-                    bird.velocity = bird.lift;
-                }
-                if (gameOver && e.code === 'Space') {
-                    resetGame();
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = '#f00';
+            bullets.forEach((bullet, index) => {
+                bullet.y -= bullet.speed;
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                if (bullet.y < 0) {
+                    bullets.splice(index, 1);
                 }
             });
-            pipes.push(createPipe());
-            gameLoop();
         }
 
-        function createPipe() {
-            const gap = 100;
-            const topHeight = Math.floor(Math.random() * (canvas.height / 2));
-            return {
-                x: canvas.width,
-                width: 20,
-                top: topHeight,
-                bottom: topHeight + gap,
-                speed: 2
-            };
-        }
-
-        function drawBird() {
-            ctx.fillStyle = '#ff0';
-            ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
-        }
-
-        function drawPipes() {
+        function drawEnemies() {
             ctx.fillStyle = '#0f0';
-            pipes.forEach(pipe => {
-                ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
-                ctx.fillRect(pipe.x, pipe.bottom, pipe.width, canvas.height - pipe.bottom);
-            });
-        }
-
-        function updateBird() {
-            bird.velocity += bird.gravity;
-            bird.y += bird.velocity;
-            if (bird.y + bird.height > canvas.height || bird.y < 0) {
-                gameOver = true;
-            }
-        }
-
-        function updatePipes() {
-            pipes.forEach(pipe => {
-                pipe.x -= pipe.speed;
-                if (pipe.x + pipe.width < 0) {
-                    pipes.shift();
-                    score++;
-                    pipes.push(createPipe());
-                }
-                if (bird.x < pipe.x + pipe.width && bird.x + bird.width > pipe.x &&
-                    (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)) {
-                    gameOver = true;
+            enemies.forEach((enemy, index) => {
+                enemy.y += enemy.speed;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                if (enemy.y > canvas.height) {
+                    enemies.splice(index, 1);
                 }
             });
         }
 
-        function resetGame() {
-            bird.y = 150;
-            bird.velocity = 0;
-            pipes = [createPipe()];
-            score = 0;
-            gameOver = false;
-            gameLoop();
+        function spawnEnemy() {
+            let x = Math.random() * (canvas.width - 40);
+            enemies.push({ x: x, y: -40, width: 40, height: 40, speed: 2 });
         }
 
-        function drawScore() {
-            ctx.fillStyle = '#000';
-            ctx.font = '20px Arial';
-            ctx.fillText(`Score: ${score}`, 10, 20);
+        function detectCollisions() {
+            bullets.forEach((bullet, bulletIndex) => {
+                enemies.forEach((enemy, enemyIndex) => {
+                    if (
+                        bullet.x < enemy.x + enemy.width &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height &&
+                        bullet.y + bullet.height > enemy.y
+                    ) {
+                        enemies.splice(enemyIndex, 1);
+                        bullets.splice(bulletIndex, 1);
+                        score += 10;
+                    }
+                });
+            });
         }
 
-        function gameLoop() {
+        function update() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (!gameOver) {
-                frameCount++;
-                if (frameCount % 100 === 0) {
-                    pipes.push(createPipe());
-                }
-                updateBird();
-                updatePipes();
-                drawBird();
-                drawPipes();
-                drawScore();
-                requestAnimationFrame(gameLoop);
-            } else {
-                ctx.fillStyle = '#000';
-                ctx.font = '30px Arial';
-                ctx.fillText('Game Over', canvas.width / 2 - 70, canvas.height / 2 - 10);
-                ctx.fillText('Press Space to Restart', canvas.width / 2 - 120, canvas.height / 2 + 30);
-            }
+            drawPlayer();
+            drawBullets();
+            drawEnemies();
+            detectCollisions();
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+            requestAnimationFrame(update);
         }
 
-        setup();
+        function shoot() {
+            bullets.push({
+                x: player.x + player.width / 2 - 5,
+                y: player.y,
+                width: 10,
+                height: 20,
+                speed: 10
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowUp') player.y -= player.speed;
+            if (e.code === 'ArrowDown') player.y += player.speed;
+            if (e.code === 'ArrowLeft') player.x -= player.speed;
+            if (e.code === 'ArrowRight') player.x += player.speed;
+            if (e.code === 'Space') shoot();
+        });
+
+        setInterval(spawnEnemy, 1000);
+        update();
     </script>
 </body>
 </html>
