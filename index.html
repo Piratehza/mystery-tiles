@@ -15,21 +15,47 @@
             background-color: #333;
         }
         canvas {
-            background-color: #fff;
+            background-color: #222;
             border: 2px solid #000;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .control-button {
+            width: 60px;
+            height: 60px;
+            margin: 0 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="controls">
+        <div class="control-button" id="leftButton">←</div>
+        <div class="control-button" id="rightButton">→</div>
+        <div class="control-button" id="shootButton">⇧</div>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let player = { x: 400, y: 300, width: 40, height: 40, color: '#00f', speed: 5 };
+        let player = { x: 400, y: 500, width: 40, height: 40, color: '#00f', speed: 5 };
         let bullets = [];
         let enemies = [];
         let score = 0;
+        let isLeft = false, isRight = false;
 
         function drawPlayer() {
             ctx.fillStyle = player.color;
@@ -89,6 +115,10 @@
             ctx.fillStyle = '#fff';
             ctx.font = '20px Arial';
             ctx.fillText(`Score: ${score}`, 10, 30);
+
+            if (isLeft && player.x > 0) player.x -= player.speed;
+            if (isRight && player.x < canvas.width - player.width) player.x += player.speed;
+
             requestAnimationFrame(update);
         }
 
@@ -103,12 +133,28 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'ArrowUp') player.y -= player.speed;
-            if (e.code === 'ArrowDown') player.y += player.speed;
-            if (e.code === 'ArrowLeft') player.x -= player.speed;
-            if (e.code === 'ArrowRight') player.x += player.speed;
+            if (e.code === 'ArrowLeft') isLeft = true;
+            if (e.code === 'ArrowRight') isRight = true;
             if (e.code === 'Space') shoot();
         });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft') isLeft = false;
+            if (e.code === 'ArrowRight') isRight = false;
+        });
+
+        document.getElementById('leftButton').addEventListener('mousedown', () => isLeft = true);
+        document.getElementById('leftButton').addEventListener('mouseup', () => isLeft = false);
+        document.getElementById('leftButton').addEventListener('touchstart', () => isLeft = true);
+        document.getElementById('leftButton').addEventListener('touchend', () => isLeft = false);
+
+        document.getElementById('rightButton').addEventListener('mousedown', () => isRight = true);
+        document.getElementById('rightButton').addEventListener('mouseup', () => isRight = false);
+        document.getElementById('rightButton').addEventListener('touchstart', () => isRight = true);
+        document.getElementById('rightButton').addEventListener('touchend', () => isRight = false);
+
+        document.getElementById('shootButton').addEventListener('mousedown', shoot);
+        document.getElementById('shootButton').addEventListener('touchstart', shoot);
 
         setInterval(spawnEnemy, 1000);
         update();
