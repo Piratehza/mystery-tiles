@@ -4,59 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D FPS Game - Level 1</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #333;
-        }
-        canvas {
-            background-color: #222;
-            border: 2px solid #000;
-        }
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .control-button {
-            width: 60px;
-            height: 60px;
-            margin: 0 10px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            user-select: none;
-        }
-        .message {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #fff;
-        }
-        .message button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <div class="controls">
         <div class="control-button" id="leftButton">←</div>
         <div class="control-button" id="rightButton">→</div>
@@ -79,7 +30,19 @@
         const enemyImg = new Image();
         enemyImg.src = 'https://via.placeholder.com/40x40.png?text=E'; // URL of the enemy image
 
-        let player = { x: 400, y: 500, width: 40, height: 40, speed: 5 };
+        let canvasWidth, canvasHeight;
+
+        function resizeCanvas() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let player = { x: canvasWidth / 2 - 20, y: canvasHeight - 60, width: 40, height: 40, speed: 5 };
         let bullets = [];
         let enemies = [];
         let particles = [];
