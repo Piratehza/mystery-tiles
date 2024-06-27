@@ -38,6 +38,21 @@
             cursor: pointer;
             user-select: none;
         }
+        .message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+        }
+        .message button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +61,14 @@
         <div class="control-button" id="leftButton">←</div>
         <div class="control-button" id="rightButton">→</div>
         <div class="control-button" id="shootButton">⇧</div>
+    </div>
+    <div class="message" id="gameOverMessage">
+        <h1>Game Over</h1>
+        <button onclick="goToHome()">Go to Home</button>
+    </div>
+    <div class="message" id="levelCompleteMessage">
+        <h1>Level Complete!</h1>
+        <button onclick="goToHome()">Go to Home</button>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -58,6 +81,8 @@
         let lives = 3;
         let isLeft = false, isRight = false;
         let gameOver = false;
+        let levelComplete = false;
+        const targetScore = 100; // Score to complete the level
 
         function drawPlayer() {
             ctx.fillStyle = player.color;
@@ -85,6 +110,7 @@
                     lives--;
                     if (lives <= 0) {
                         gameOver = true;
+                        document.getElementById('gameOverMessage').style.display = 'block';
                     }
                 }
             });
@@ -108,6 +134,10 @@
                         enemies.splice(enemyIndex, 1);
                         bullets.splice(bulletIndex, 1);
                         score += 10;
+                        if (score >= targetScore) {
+                            levelComplete = true;
+                            document.getElementById('levelCompleteMessage').style.display = 'block';
+                        }
                     }
                 });
             });
@@ -123,6 +153,7 @@
                     lives--;
                     if (lives <= 0) {
                         gameOver = true;
+                        document.getElementById('gameOverMessage').style.display = 'block';
                     }
                 }
             });
@@ -142,14 +173,8 @@
             if (isLeft && player.x > 0) player.x -= player.speed;
             if (isRight && player.x < canvas.width - player.width) player.x += player.speed;
 
-            if (!gameOver) {
+            if (!gameOver && !levelComplete) {
                 requestAnimationFrame(update);
-            } else {
-                ctx.fillStyle = '#fff';
-                ctx.font = '40px Arial';
-                ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
-                ctx.font = '20px Arial';
-                ctx.fillText('Reload to try again', canvas.width / 2 - 70, canvas.height / 2 + 40);
             }
         }
 
@@ -186,6 +211,10 @@
 
         document.getElementById('shootButton').addEventListener('mousedown', shoot);
         document.getElementById('shootButton').addEventListener('touchstart', shoot);
+
+        function goToHome() {
+            window.location.href = 'index.html';
+        }
 
         setInterval(spawnEnemy, 1000);
         update();
