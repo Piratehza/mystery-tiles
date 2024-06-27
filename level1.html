@@ -74,7 +74,12 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let player = { x: 400, y: 500, width: 40, height: 40, color: '#00f', speed: 5 };
+        const playerImg = new Image();
+        playerImg.src = 'https://via.placeholder.com/40x40.png?text=P'; // URL of the player image
+        const enemyImg = new Image();
+        enemyImg.src = 'https://via.placeholder.com/40x40.png?text=E'; // URL of the enemy image
+
+        let player = { x: 400, y: 500, width: 40, height: 40, speed: 5 };
         let bullets = [];
         let enemies = [];
         let particles = [];
@@ -86,8 +91,7 @@
         const targetScore = 100; // Score to complete the level
 
         function drawPlayer() {
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
         }
 
         function drawBullets() {
@@ -102,10 +106,9 @@
         }
 
         function drawEnemies() {
-            ctx.fillStyle = '#0f0';
             enemies.forEach((enemy, index) => {
                 enemy.y += enemy.speed;
-                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
                 if (enemy.y > canvas.height) {
                     enemies.splice(index, 1);
                     lives--;
