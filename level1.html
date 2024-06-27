@@ -3,270 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D FPS Game - Level 1</title>
+    <title>2D FPS Game</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #333;
-        }
-        canvas {
-            background-color: #222;
-            border: 2px solid #000;
-        }
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .control-button {
-            width: 60px;
-            height: 60px;
-            margin: 0 10px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            user-select: none;
-        }
-        .message {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
             color: #fff;
+            font-family: Arial, sans-serif;
         }
-        .message button {
+        .menu {
+            text-align: center;
+        }
+        .menu h1 {
+            margin-bottom: 20px;
+        }
+        .menu button {
             padding: 10px 20px;
             font-size: 16px;
+            margin: 10px;
             cursor: pointer;
-            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div class="controls">
-        <div class="control-button" id="leftButton">←</div>
-        <div class="control-button" id="rightButton">→</div>
-        <div class="control-button" id="shootButton">⇧</div>
-    </div>
-    <div class="message" id="gameOverMessage">
-        <h1>Game Over</h1>
-        <button onclick="goToHome()">Go to Home</button>
-    </div>
-    <div class="message" id="levelCompleteMessage">
-        <h1>Level Complete!</h1>
-        <button onclick="goToHome()">Go to Home</button>
+    <div class="menu">
+        <h1>2D FPS Game</h1>
+        <button onclick="navigateToLevel(1)">Level 1</button>
+        <button onclick="navigateToLevel(2)">Level 2</button>
+        <button onclick="navigateToLevel(3)">Level 3</button>
     </div>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        const playerImg = new Image();
-        playerImg.src = 'https://via.placeholder.com/40x40.png?text=P'; // URL of the player image
-        const enemyImg = new Image();
-        enemyImg.src = 'https://via.placeholder.com/40x40.png?text=E'; // URL of the enemy image
-
-        let canvasWidth, canvasHeight;
-
-        function resizeCanvas() {
-            canvasWidth = window.innerWidth;
-            canvasHeight = window.innerHeight;
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+        function navigateToLevel(level) {
+            window.location.href = `level${level}.html`;
         }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        let player = { x: canvasWidth / 2 - 20, y: canvasHeight - 60, width: 40, height: 40, speed: 5 };
-        let bullets = [];
-        let enemies = [];
-        let particles = [];
-        let score = 0;
-        let lives = 3;
-        let isLeft = false, isRight = false;
-        let gameOver = false;
-        let levelComplete = false;
-        const targetScore = 100; // Score to complete the level
-
-        function drawPlayer() {
-            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
-        }
-
-        function drawBullets() {
-            ctx.fillStyle = '#f00';
-            bullets.forEach((bullet, index) => {
-                bullet.y -= bullet.speed;
-                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-                if (bullet.y < 0) {
-                    bullets.splice(index, 1);
-                }
-            });
-        }
-
-        function drawEnemies() {
-            enemies.forEach((enemy, index) => {
-                enemy.y += enemy.speed;
-                ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
-                if (enemy.y > canvas.height) {
-                    enemies.splice(index, 1);
-                    lives--;
-                    if (lives <= 0) {
-                        gameOver = true;
-                        document.getElementById('gameOverMessage').style.display = 'block';
-                    }
-                }
-            });
-        }
-
-        function drawParticles() {
-            particles.forEach((particle, index) => {
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.life -= 1;
-                if (particle.life <= 0) {
-                    particles.splice(index, 1);
-                } else {
-                    ctx.fillStyle = `rgba(${particle.color}, ${particle.life / particle.maxLife})`;
-                    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
-                }
-            });
-        }
-
-        function spawnEnemy() {
-            let x = Math.random() * (canvas.width - 40);
-            let speed = 2;
-            enemies.push({ x: x, y: -40, width: 40, height: 40, speed: speed });
-        }
-
-        function spawnParticles(x, y, color, count = 10) {
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    size: 2,
-                    color: color,
-                    life: 50,
-                    maxLife: 50,
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: (Math.random() - 0.5) * 2,
-                });
-            }
-        }
-
-        function detectCollisions() {
-            bullets.forEach((bullet, bulletIndex) => {
-                enemies.forEach((enemy, enemyIndex) => {
-                    if (
-                        bullet.x < enemy.x + enemy.width &&
-                        bullet.x + bullet.width > enemy.x &&
-                        bullet.y < enemy.y + enemy.height &&
-                        bullet.y + bullet.height > enemy.y
-                    ) {
-                        enemies.splice(enemyIndex, 1);
-                        bullets.splice(bulletIndex, 1);
-                        score += 10;
-                        spawnParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, '0,255,0');
-                        if (score >= targetScore) {
-                            levelComplete = true;
-                            document.getElementById('levelCompleteMessage').style.display = 'block';
-                        }
-                    }
-                });
-            });
-
-            enemies.forEach((enemy, enemyIndex) => {
-                if (
-                    player.x < enemy.x + enemy.width &&
-                    player.x + player.width > enemy.x &&
-                    player.y < enemy.y + enemy.height &&
-                    player.y + player.height > enemy.y
-                ) {
-                    enemies.splice(enemyIndex, 1);
-                    lives--;
-                    spawnParticles(player.x + player.width / 2, player.y + player.height / 2, '0,0,255');
-                    if (lives <= 0) {
-                        gameOver = true;
-                        document.getElementById('gameOverMessage').style.display = 'block';
-                    }
-                }
-            });
-        }
-
-        function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-            drawBullets();
-            drawEnemies();
-            drawParticles();
-            detectCollisions();
-            ctx.fillStyle = '#fff';
-            ctx.font = '20px Arial';
-            ctx.fillText(`Score: ${score}`, 10, 30);
-            ctx.fillText(`Lives: ${lives}`, 10, 60);
-
-            if (isLeft && player.x > 0) player.x -= player.speed;
-            if (isRight && player.x < canvas.width - player.width) player.x += player.speed;
-
-            if (!gameOver && !levelComplete) {
-                requestAnimationFrame(update);
-            }
-        }
-
-        function shoot() {
-            bullets.push({
-                x: player.x + player.width / 2 - 5,
-                y: player.y,
-                width: 10,
-                height: 20,
-                speed: 10
-            });
-            spawnParticles(player.x + player.width / 2, player.y, '255,0,0', 5);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'ArrowLeft') isLeft = true;
-            if (e.code === 'ArrowRight') isRight = true;
-            if (e.code === 'Space') shoot();
-        });
-
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'ArrowLeft') isLeft = false;
-            if (e.code === 'ArrowRight') isRight = false;
-        });
-
-        document.getElementById('leftButton').addEventListener('mousedown', () => isLeft = true);
-        document.getElementById('leftButton').addEventListener('mouseup', () => isLeft = false);
-        document.getElementById('leftButton').addEventListener('touchstart', () => isLeft = true);
-        document.getElementById('leftButton').addEventListener('touchend', () => isLeft = false);
-
-        document.getElementById('rightButton').addEventListener('mousedown', () => isRight = true);
-        document.getElementById('rightButton').addEventListener('mouseup', () => isRight = false);
-        document.getElementById('rightButton').addEventListener('touchstart', () => isRight = true);
-        document.getElementById('rightButton').addEventListener('touchend', () => isRight = false);
-
-        document.getElementById('shootButton').addEventListener('mousedown', shoot);
-        document.getElementById('shootButton').addEventListener('touchstart', shoot);
-
-        function goToHome() {
-            window.location.href = 'index.html';
-        }
-
-        setInterval(spawnEnemy, 1000);
-        update();
     </script>
 </body>
 </html>
