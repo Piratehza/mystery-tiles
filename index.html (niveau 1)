@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D FPS Game</title>
+    <title>2D FPS Game - Level 1</title>
     <style>
         body {
             margin: 0;
@@ -51,10 +51,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const level = parseInt(localStorage.getItem('level') || '1');
-        const playerColor = localStorage.getItem('style') || '#00f';
-
-        let player = { x: 400, y: 500, width: 40, height: 40, color: playerColor, speed: 5 };
+        let player = { x: 400, y: 500, width: 40, height: 40, color: '#00f', speed: 5 };
         let bullets = [];
         let enemies = [];
         let score = 0;
@@ -95,7 +92,7 @@
 
         function spawnEnemy() {
             let x = Math.random() * (canvas.width - 40);
-            let speed = 2 + level;
+            let speed = 2;
             enemies.push({ x: x, y: -40, width: 40, height: 40, speed: speed });
         }
 
